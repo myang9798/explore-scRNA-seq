@@ -9,56 +9,31 @@
 
 rm(list=ls())
 library(shiny)
-library(viridis)
-library(scRNAseq)
+#library(viridis)
+#library(scRNAseq)
 library(ggplot2)
-library(gridExtra)
-load("tsne_currentwork.RData")
-ncell <- NULL
-process_expr <- function(x, ncell, prefix){
-  exprMat <- exprs(x)
-  gene_names <- x@featureData@data$symbol
-  exprMat@Dimnames[[1]] <- gene_names
-  celltotal <- dim(exprMat)[2]
-  if(is.null(ncell)){
-    ncell <- celltotal
-  }
-  exprMat <- exprMat[, sample(1:celltotal, ncell)]
-  exprMat <- as.matrix(exprMat)
-  colnames(exprMat) <- paste0(prefix, colnames(exprMat), sep="")
-  exprMat
-}
-eData.a <- process_expr(a.gbm.f, ncell, "a")
-eData.b <- process_expr(b.gbm.f, ncell, "b")
-eData.i <- process_expr(i.gbm.f, ncell, "i")
-eData.f <- process_expr(f.gbm.f, ncell, "f")
-n_a <- dim(eData.a)[2]
-n_b <- dim(eData.b)[2]
-n_i <- dim(eData.i)[2]
-n_f <- dim(eData.f)[2]
-a_genes <- rownames(eData.a)
-b_genes <- rownames(eData.b)
-i_genes <- rownames(eData.i)
-f_genes <- rownames(eData.f)
-gene_intersect <- Reduce(intersect,
-                         list(a_genes, b_genes,
-                              i_genes, f_genes)) #This is the name of all genes
-eData.all <- cbind(eData.a, eData.b, eData.i, eData.f)
-eData.all <- eData.all[unique(rownames(eData.all)),] # Remove duplicated rows
-all_unique <- function(x){length(x) == length(unique(x))}
-all_unique(rownames(eData.all))
-all_unique(colnames(eData.all))
-tsne.obj <- sce.logsdnorm.tsne.wpca
-breed <- rep(c("Mutant", "Wild Type"), times=c(dim(eData.a)[2] + dim(eData.b)[2],
-                                               dim(eData.i)[2] + dim(eData.f)[2]))
-sample_id <- rep(c("Mutant, Sample A", "Mutant, Sample B", 
-                   "Wild Type, Sample I", "Wild Type, Sample F"), 
-                 times=c(dim(eData.a)[2], dim(eData.b)[2],
-                         dim(eData.i)[2], dim(eData.f)[2]))
-expr_annotation <- data.frame(cbind(sample_id, breed))
-names(expr_annotation) <- c("sample", "breed")
-head(expr_annotation)
-
+#library(gridExtra)
+load("sce_count_matrix.RData")
+load("expr_annotation.RData")
+load("tsne_obj.RData")
+names(expr_annotation) <- c("breed", "sample")
+tsne.obj <- sce.logcounts.tsne.wopca
+tsne.obj$sType <- rep(c("A", "B", "F", "I"), times=table(expr_annotation$sample))
+gene_intersect <- rownames(exprMat)
+#load("sce.RData")
+#exprMat <- counts(sce)
+#save(exprMat, file="sce_count_matrix.RData")
+#expr_annotation <- data.frame(cbind(as.character(sce$batch_name), 
+#                                    as.character(sce$breed_name)),
+#                              stringsAsFactors = F)
+#names(expr_annotation) <- c("sample", "breed")
+#batch <- mapvalues(expr_annotation$sample, from=c("A", "B", "F", "I"),
+#                   to=c("Mutant, Sample A", "Mutant, Sample B", 
+#                     "Wild Type, Sample I", "Wild Type, Sample F"))
+#breed <- mapvalues(expr_annotation$breed, from=c("MT", "WT"), 
+#                   to=c("Mutant", "Wild Type"))
+#expr_annotation <- data.frame(breed=breed, batch=batch, stringsAsFactors = F)
+#save(expr_annotation, file="expr_annotation.RData")
 
 #notes on function
 #first arguments are tsne object, counts in expression data,
@@ -72,7 +47,7 @@ sce_scatter <- function(tsne.obj, sam1="A",sam2="A",sam3="A",sam4="A",
                         expression_annotation=expression_annotation,
                         facet_var, genes, k=0,
                         output_dir){
-  tsne.obj
+  #tsne.obj
   #currently colors are chosen here.
   #one gene:
   #blue
@@ -221,32 +196,35 @@ server <- function(input, output) {
     way<-switch(input$Way,
                 "tSne"=tsne.obj)
     
+    #try subsetting larger data sets rather than building
+    #up the data sets from eData.x
     if(input$Sample=="All (Sample A, B, F, I)"){
-      expression.data=cbind(eData.a,eData.b,eData.f,eData.i)
+      expression.data=exprMat
       sam1="A";sam2="B";sam3="F";sam4="I"
       expr_anno=expr_annotation
     }else if(input$Sample=="Mutant (Sample A, B)"){
-      expression.data=cbind(eData.a,eData.b)
+      expression.data=exprMat[, expr_annotation$sample %in% c("Mutant, Sample A", "Mutant, Sample B")]
       sam1="A";sam2="B";sam3="A";sam4="B"
       expr_anno=subset(expr_annotation,sample=="Mutant, Sample A"|sample=="Mutant, Sample B")
     }else if(input$Sample=="Wild Type (Sample F, I)"){
-      expression.data=cbind(eData.f,eData.i)
+      expression.data=exprMat[, expr_annotation$sample %in% c("Wild Type, Sample F", 
+                                                              "Wild Type, Sample I")]
       sam1="F";sam2="I";sam3="F";sam4="I"
       expr_anno=subset(expr_annotation,sample=="Wild Type, Sample F"|sample=="Wild Type, Sample I")
     }else if(input$Sample=="Mutant, Sample A"){
-      expression.data=eData.a
+      expression.data=exprMat[, expr_annotation$sample %in% c("Mutant, Sample A")]
       sam1="A";sam2="A";sam3="A";sam4="A"
       expr_anno=subset(expr_annotation,sample=="Mutant, Sample A")
     }else if(input$Sample=="Mutant, Sample B"){
-      expression.data=eData.b
+      expression.data=exprMat[, expr_annotation$sample %in% c("Mutant, Sample B")]
       sam1="B";sam2="B";sam3="B";sam4="B"
       expr_anno=subset(expr_annotation,sample=="Mutant, Sample B")
     }else if(input$Sample=="Wild Type, Sample F"){
-      expression.data=eData.f
+      expression.data=exprMat[, expr_annotation$sample %in% c("Wild Type, Sample F")]
       sam1="F";sam2="F";sam3="F";sam4="F"
       expr_anno=subset(expr_annotation,sample=="Wild Type, Sample F")
     }else if(input$Sample=="Wild Type, Sample I"){
-      expression.data=eData.i
+      expression.data=exprMat[, expr_annotation$sample %in% c("Wild Type, Sample I")]
       sam1="I";sam2="I";sam3="I";sam4="I"
       expr_anno=subset(expr_annotation,sample=="Wild Type, Sample I")
     }
@@ -269,4 +247,3 @@ server <- function(input, output) {
 
 # Run the application 
 shinyApp(ui = ui, server = server)
-
