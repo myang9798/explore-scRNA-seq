@@ -5,7 +5,6 @@
 # Find out more about building applications with Shiny here:
 #
 #    http://shiny.rstudio.com/
-#
 
 rm(list=ls())
 library(shiny)
