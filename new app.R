@@ -191,7 +191,7 @@ sce_violin_plot <- function(norm=T, genes, subset=NULL, facet_var=NULL){
   violin_g <- merge(violin_g, anno_subset, by.x="cell_id", by.y="cell_id")
   violin_p <- ggplot(violin_g, aes(x=GeneName, y=expression,fill=GeneName)) + 
     geom_violin()
-  violin_p <- violin_p + labs(x="Gene Name",y="Gene Expression",fill=" ")
+  violin_p <- violin_p + labs(x=" ",y="Gene Expression",fill=" ")
   if(!is.null(facet_var)){
     violin_p <- violin_p + facet_grid(eval(expr(~ !!ensym(facet_var)))) 
   }
@@ -303,6 +303,7 @@ server <- function(input, output) {
                   expression_annotation=expr_anno, 
                   facet_var=sample, genes=input$Gene1)
      g1<-g1+theme(
+       text = element_text(size=15,face="bold",color="black"),
        axis.text=element_text(size=12,face="bold"),
        legend.text = element_text(size=12,face = "bold"),
        legend.title = element_text(size=15,face="bold"),
@@ -314,6 +315,7 @@ server <- function(input, output) {
                   expression_annotation=expr_anno, 
                   facet_var=sample, genes=c(input$Gene1,input$Gene2))
       g1<-g1+theme(
+        text = element_text(size=15,face="bold",color="black"),
         axis.text=element_text(size=12,face="bold"),
         legend.text = element_text(size=12,face = "bold"),
         legend.title = element_text(size=15,face="bold"),
@@ -343,22 +345,24 @@ server <- function(input, output) {
      g2=sce_violin_plot(genes=c(input$Gene1,input$Gene2), norm=T,subset=subset,
                        facet_var=input$facet)
      g2<-g2+theme(
+       text = element_text(size=15,face="bold",color="black"),
        axis.text.x=element_text(size=11,face="bold",color="black"),
-       axis.text.y = element_text(size=14,face="bold",color= "#009E73"),
+       axis.text.y = element_text(size=14,face="bold",color= "black"),
        legend.text = element_text(size=14,face = "bold"),
        legend.title = element_text(size=18,face="bold"),
-       axis.title.x =element_text( size=18, face="bold",color="darkblue"),
-       axis.title.y = element_text( size=18, face="bold",color="darkblue"))
+       axis.title.x =element_text( size=18, face="bold",color="black"),
+       axis.title.y = element_text( size=18, face="bold",color="black"))
       }else{
       g2=sce_violin_plot(genes=c(input$Gene1,input$Gene2), norm=F,subset=subset,
                            facet_var=input$facet)
       g2<-g2+theme(
+        text = element_text(size=15,face="bold",color="black"),
         axis.text.x=element_text(size=11,face="bold",color="black"),
-        axis.text.y = element_text(size=14,face="bold",color= "#009E73"),
+        axis.text.y = element_text(size=14,face="bold",color= "black"),
         legend.text = element_text(size=14,face = "bold"),
         legend.title = element_text(size=18,face="bold"),
-        axis.title.x =element_text( size=18, face="bold",color="darkblue"),
-        axis.title.y = element_text( size=18, face="bold",color="darkblue"))
+        axis.title.x =element_text( size=18, face="bold",color="black"),
+        axis.title.y = element_text( size=18, face="bold",color="black"))
       }
     grid.arrange(g2)
     })
