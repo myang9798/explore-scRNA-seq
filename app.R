@@ -1,11 +1,8 @@
-#
-# This is a Shiny web application. You can run the application by clicking
-# the 'Run App' button above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
+#Here are some notes about the structure of this app.
+#The app uses 5 packages: shiny, gpplot2, rlang, gridExtra, and ggpubr
+#The main driver functions are "sce_scatter" and "sce_violin_plot."
+#These driver functions produce the plot, although some additional changes
+#to plots (mainly to the font size and color) have been added by Min.
 
 rm(list=ls())
 library(shiny)
@@ -141,7 +138,8 @@ sce_scatter <- function(tsne.obj, sam1="A",sam2="A",sam3="A",sam4="A",
     guides(color=
              guide_legend(
                title = NULL,
-               override.aes=list(size=3.5)))
+               override.aes=list(size=3.5))) +
+    ggpubr::theme_pubclean()
   gene_output_name <- paste(genes, collapse="_")
   gene_output_name <- paste(c(gene_output_name, ".pdf"), collapse="")
   # output_file <- paste(output_dir, gene_output_name, sep="/")
