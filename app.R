@@ -141,7 +141,8 @@ sce_scatter <- function(tsne.obj, sam1="A",sam2="A",sam3="A",sam4="A",
     guides(color=
              guide_legend(
                title = NULL,
-               override.aes=list(size=3.5)))
+               override.aes=list(size=3.5))) +
+    ggpubr::theme_pubclean()
   gene_output_name <- paste(genes, collapse="_")
   gene_output_name <- paste(c(gene_output_name, ".pdf"), collapse="")
   # output_file <- paste(output_dir, gene_output_name, sep="/")
